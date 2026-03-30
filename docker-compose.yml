@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  api:
+    build: .
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app  # Mounts your code so changes reflect immediately
+    environment:
+      - AGENT_A_MODEL=llama3.2
+      - AGENT_B_MODEL=qwen2.5
+      - JUDGE_MODEL=phi3:mini
+      - DEBATE_TURNS=3
+      - DB_PATH=/app/agenteval.db
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'  # Lets container reach host's Ollama
+
+  frontend:
+    build: .
+    command: python gradio_app.py
+    ports:
+      - '7860:7860'
+    environment:
+      - API_BASE=http://api:8000/api/v1
+    depends_on:
+      - api
