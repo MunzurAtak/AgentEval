@@ -10,7 +10,7 @@ USE_GROQ = bool(os.getenv('GROQ_API_KEY'))
 # Maps our local Ollama model names to their Groq equivalents
 GROQ_MODEL_MAP = {
     'llama3.2': 'llama-3.1-8b-instant',
-    'qwen2.5': 'mixtral-8x7b-32768',
+    'qwen2.5': 'llama-3.3-70b-versatile',
     'phi3:mini': 'llama-3.1-8b-instant',
 }
 
