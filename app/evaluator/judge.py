@@ -79,16 +79,25 @@ def _parse_scores(raw: str, debate_id: str) -> EvaluationResult:
     )
 
 
-def evaluate_debate(debate: DebateResult) -> EvaluationResult:
-    """Run the judge LLM over a completed debate and return scores."""
+def evaluate_debate(debate: DebateResult, max_retries: int = 3) -> EvaluationResult:
+    """Run the judge LLM over a completed debate and return scores.
+    Retries automatically if the model returns malformed JSON.
+    """
     judge_model = os.getenv('JUDGE_MODEL', 'phi3:mini')
     transcript = _build_transcript_text(debate)
     prompt = _build_judge_prompt(transcript)
 
-    raw_response = chat(
-        model=judge_model,
-        messages=[{'role': 'user', 'content': prompt}],
-        temperature=0.1  # Low temp = more consistent JSON output
-    )
+    last_error = None
+    for attempt in range(1, max_retries + 1):
+        raw_response = chat(
+            model=judge_model,
+            messages=[{'role': 'user', 'content': prompt}],
+            temperature=0.1  # Low temp = more consistent JSON output
+        )
+        try:
+            return _parse_scores(raw_response, debate.debate_id)
+        except ValueError as e:
+            last_error = e
+            print(f'Judge attempt {attempt}/{max_retries} returned invalid JSON, retrying...')
 
-    return _parse_scores(raw_response, debate.debate_id)
+    raise RuntimeError(f'Judge failed to return valid JSON after {max_retries} attempts') from last_error
