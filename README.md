@@ -15,7 +15,7 @@ pinned: false
 
 **Live demo:** https://huggingface.co/spaces/MunzurAtak/agenteval
 
-![AgentEval Demo](Demo.png)
+![AgentEval Demo](https://raw.githubusercontent.com/MunzurAtak/AgentEval/master/Demo.png)
 
 ## What it does
 
