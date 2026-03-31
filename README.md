@@ -15,6 +15,14 @@ pinned: false
 
 **Live demo:** https://huggingface.co/spaces/MunzurAtak/agenteval
 
+## Description
+
+AgentEval is a multi-agent pipeline that stages a structured debate between two LLMs, then uses a third LLM as an impartial judge to score both sides. The goal is to explore how well language models can construct, sustain, and rebut arguments — and whether automated evaluation can produce meaningful, reproducible scores.
+
+Each agent is assigned a fixed stance (for / against) and maintains full conversation history, so arguments build naturally across turns rather than being generated in isolation. The judge receives the complete transcript and scores both agents across five independent metrics before declaring a winner.
+
+The system runs entirely on free, locally-hosted models via Ollama for development, and switches automatically to Groq's API for cloud deployment on Hugging Face Spaces — no code changes needed.
+
 ## What it does
 
 AgentEval pits two AI agents against each other on any debate topic. One argues **for**, one argues **against**. A third AI acts as a judge and scores both across five quality metrics, then declares a winner.
@@ -58,6 +66,20 @@ Each metric is scored 1–10. Maximum score: **50/50**.
 | Containerisation | Docker + docker-compose |
 | CI/CD | GitHub Actions |
 | Testing | Pytest with mocking |
+
+## Design Choices
+
+**Stateful agents over stateless calls** — Each `DebateAgent` maintains its own conversation history. Rather than reconstructing context from the transcript on every turn, the agent accumulates a `history` list that grows with each exchange. This keeps arguments coherent and makes the agent respond to its opponent directly rather than making generic points.
+
+**Single LLM client with environment-driven routing** — `llm_client.py` is the only place that knows whether to call Ollama or Groq. The rest of the codebase calls `chat(model, messages)` and never thinks about deployment. Swapping backends is a one-line env var change (`GROQ_API_KEY`), which is what makes local development and cloud deployment share the same code.
+
+**Separate models for each role** — Agent A, Agent B, and the judge each use a different model by default (llama3.2, qwen2.5, phi3:mini). Using the same model for both sides produces near-identical argument styles; different models create more varied, realistic debates and stress-test the judge against heterogeneous outputs.
+
+**JSON-only judge output with retry logic** — The judge is prompted to return raw JSON with no explanation text. If the model adds markdown fences or extra prose, the parser strips them and retries up to 3 times before raising. This keeps evaluation deterministic and avoids brittle string parsing of natural language verdicts.
+
+**FastAPI + Gradio as two separate processes** — The API and UI are decoupled so the backend can be used headlessly (e.g. via the REST API or tests) without running Gradio. On Hugging Face Spaces, `app.py` wires them together into a single process since Spaces only exposes one port.
+
+**SQLite for storage** — Debates and scores are small, structured, and written once. SQLite requires no infrastructure and works identically in development, Docker, and Spaces. The database path is overridable via `DB_PATH` env var, which is how tests use a temporary file without touching the real database.
 
 ## Run Locally
 
