@@ -11,11 +11,9 @@ pinned: false
 
 # AgentEval — Automated LLM Debate Evaluation Pipeline
 
-[![CI](https://github.com/MunzurAtak/AgentEval/actions/workflows/ci.yml/badge.svg)](https://github.com/MunzurAtak/AgentEval/actions)
+[![CI](https://github.com/MunzurAtak/AgentEval/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/MunzurAtak/AgentEval/actions/workflows/ci.yml)
 
 **Live demo:** https://huggingface.co/spaces/MunzurAtak/agenteval
-
-![AgentEval Demo](https://raw.githubusercontent.com/MunzurAtak/AgentEval/master/Demo.png)
 
 ## What it does
 
