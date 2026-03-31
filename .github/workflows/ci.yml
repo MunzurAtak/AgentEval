@@ -17,5 +17,3 @@ jobs:
 
       - name: Run tests
         run: pytest tests/ -v
-        env:
-          GROQ_API_KEY: 'test-key-not-real'
